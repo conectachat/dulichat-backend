@@ -3,16 +3,18 @@ import { getCurrentQR, sendMessage, startSession } from './baileys.js';
 
 const router = Router();
 
-// Autenticação simples por API_KEY
+// Autenticação simples por API_KEY (do .env)
 router.use((req, res, next) => {
   const key = req.header('x-api-key');
-  if (!key || key !== process.env.API_KEY) return res.status(401).json({ error: 'unauthorized' });
+  if (!key || key !== process.env.API_KEY) {
+    return res.status(401).json({ error: 'unauthorized' });
+  }
   next();
 });
 
 router.post('/session/start', async (req, res) => {
-  const { label } = req.body || {};
-  await startSession(label || 'Default');
+  const body = req.body as { label?: string } | undefined;
+  await startSession(body?.label || 'Default');
   res.json({ ok: true });
 });
 
@@ -22,11 +24,12 @@ router.get('/session/qr', (req, res) => {
 });
 
 router.post('/messages/send', async (req, res) => {
-  const { jid, text } = req.body;
-  if (!jid || !text) return res.status(400).json({ error: 'jid and text required' });
-  await sendMessage(jid, text);
+  const body = req.body as { jid?: string; text?: string } | undefined;
+  if (!body?.jid || !body?.text) {
+    return res.status(400).json({ error: 'jid and text required' });
+  }
+  await sendMessage(body.jid, body.text);
   res.json({ ok: true });
 });
 
 export default router;
-
