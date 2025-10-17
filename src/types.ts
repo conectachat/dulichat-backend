@@ -1,15 +1,23 @@
-// Representa uma sessão de WhatsApp
+// Eventos enviados pelo servidor via WebSocket para o frontend
+export type WSEvent =
+  | { type: 'qr'; payload: { qr: string } }
+  | { type: 'session.state'; payload: { state: SessionState } }
+  | { type: 'message.new'; payload: UINewMessageEvent };
+
+export type SessionState = 'DISCONNECTED' | 'QR' | 'CONNECTING' | 'CONNECTED';
+
+// Sessão de WhatsApp salva no Supabase
 export interface WASession {
   id?: string;
   phone_label: string;
-  state: 'DISCONNECTED' | 'QR' | 'CONNECTING' | 'CONNECTED';
+  state: SessionState;
   qr_code?: string | null;
   session_data?: Record<string, any>;
   created_at?: string;
   updated_at?: string;
 }
 
-// Representa um contato
+// Contato
 export interface WAContact {
   id?: string;
   session_id?: string;
@@ -19,7 +27,7 @@ export interface WAContact {
   created_at?: string;
 }
 
-// Representa um chat/conversa
+// Chat/Conversa
 export interface WAChat {
   id?: string;
   session_id?: string;
@@ -29,8 +37,8 @@ export interface WAChat {
   created_at?: string;
 }
 
-// Representa uma mensagem
-export interface WAMessage {
+// Mensagem (persistência)
+export interface WADBMessage {
   id?: string;
   session_id?: string;
   chat_id?: string;
@@ -40,4 +48,14 @@ export interface WAMessage {
   body?: string;
   media?: Record<string, any>;
   timestamp?: string;
+}
+
+// Payload amigável para o frontend quando chega mensagem nova
+export interface UINewMessageEvent {
+  chatJid: string;
+  isGroup: boolean;
+  waMsgId: string;
+  from: string;          // jid de quem enviou
+  text: string;
+  when: string;          // ISO
 }
